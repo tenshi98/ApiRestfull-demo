@@ -1,4 +1,4 @@
-# GoTruck Operaciones V2 (API REST)
+# ApiRestfull - Demo
 
 Una API REST backend modular y escalable construida en PHP puro sin frameworks externos ni dependencias, implementando autenticación JWT manual y una arquitectura limpia de Rutas/Controladores (MVC simplificado).
 
@@ -41,19 +41,22 @@ Para entornos como Apache, en producción deberás asegurar que las directivas `
 
 ## Estructura de carpetas completa del proyecto
 ```text
-gotruck_operaciones_v2/
+ApiRestfull-Demo/
 ├── app/
 │   ├── .htaccess                 # Bloqueo directo Apache
 │   ├── controllers/
 │   │   ├── AuthController.php    # (Extends BaseController) Login/logout API
-│   │   ├── BaseController.php    # Controlador Abstracto (Mecanismo DRY)
 │   │   └── ItemController.php    # (Extends BaseController) CRUD items
+│   ├── core/
+│   │   ├── requests.php          # Clase que sanitiza y maneja parámetros (GET, POST)
+│   │   ├── responses.php         # Fábrica de respuestas JSON estandarizadas
+│   │   ├── tokenBlacklist.php    # Gestor de invalidación de JWT (Logout) con manejo de Race Conditions
+│   │   └── userAuth.php          # Clase utilitaria Auth que maneja firma JWT y reglas de login
 │   ├── AuditLogger.php           # Caja Negra de auditoría (logs)
-│   ├── RateLimiter.php           # Bloqueo heurístico por IP temporal
-│   ├── requests.php              # Clase que sanitiza y maneja parámetros (GET, POST)
-│   ├── responses.php             # Fábrica de respuestas JSON estandarizadas
-│   ├── tokenBlacklist.php        # Gestor de invalidación de JWT (Logout) con manejo de Race Conditions
-│   └── userAuth.php              # Clase utilitaria Auth que maneja firma JWT y reglas de login
+│   ├── BaseController.php        # Controlador Abstracto (Mecanismo DRY)
+│   ├── Configs.php               # Archivo de configuraciones globales
+│   ├── Functions.php             # Funciones de ayuda generales
+│   └── RateLimiter.php           # Bloqueo heurístico por IP temporal
 ├── public/
 │   └── index.php                 # Front-Controller, Autoloader y Manejo Silencioso de Excepciones 500
 ├── routes/
@@ -61,23 +64,25 @@ gotruck_operaciones_v2/
 │   └── api.php                   # Definición centralizada de todas las rutas de la API, y el Router
 └── security/
     ├── .htaccess                 # Bloqueo directo Apache
-    ├── audit.log                 # Bitácora de operaciones (Qué usuario cambió qué y cuándo)
+    ├── audit.log                 # (Generado) Bitácora de operaciones (Qué usuario cambió qué y cuándo)
     ├── blacklisted_tokens.json   # Archivo protegido persistente bloqueado para tokens invalidados
-    ├── error.log                 # Bitácora cruda e invisible de excepciones de sistema
-    └── rate_limit.json           # Trackers de IPs activas contra fuerza bruta
+    ├── error.log                 # (Generado) Bitácora cruda e invisible de excepciones de sistema
+    └── rate_limit.json           # (Generado) Trackers de IPs activas contra fuerza bruta
 ```
 
 ## Explicaciones breves de cada módulo
 
 * **`/public/index.php`**: El despachador principal (Front-controller). Toda petición web entra por aquí. Contiene reglas para proteger la información frente a una falla 500, interceptando `exceptions` para arrojarlas localmente en rutinas log sin exponer el stack trace, auto-carga módulos (`spl_autoload_register`) y, tras iniciar instancias (como `Request` y la conexión de Inyección `iDB`), corre el ruteador web.
 * **`/routes/api.php`**: Archivo de enrutamiento con motor de **Middlewares pre-cargados**. Verifica de forma agresiva requerimientos de sesión o limitación de tráfico antes de permitir instanciaciones lógicas. Contiene la función que guarda rutas en memoria y un método `dispatch(...)` que localiza a qué Controlador iterar basándose en arreglos de expresiones regulares que cotejan la URL del cliente.
-* **`/app/requests.php`**: Clase `Request`. Agrupa y simplifica los métodos globales como `$_GET`, `$_POST`, o lee datos directos en formato crudo `php://input` JSON.
-* **`/app/responses.php`**: Clase estática `Response`. Retorna formato estándar JSON, deteniendo la ejecución automáticamente en caso de errores para estructurar estandarizadamente toda comunicación visual de la App.
-* **`/app/tokenBlacklist.php`**: Clase defensiva encargada del registro persistente y atómico (protegido frente a Concurrencia/Race Conditions empleando flocks) de tokens que hayan sido deliberadamente desautorizados o invalidados (Logout manual). Cuenta con un sistema interno de automantenimiento para rotar y eliminar tokens antiguos transparentemente según un límite de buffer en `configs.php`.
-* **`/app/userAuth.php`**: Engloba las lógicas de encripción `HS256` de firmas JWT y sus validaciones complejas, verificación en la memoria del cliente activo y control maestro de acceso.
-* **`/app/RateLimiter.php`**: Firewall primitivo que usa un mapeador local en `.json` para contabilizar intentos repetidos desde una única IP e implementar bloqueos matemáticos disuasivos por tiempo.
+* **`/app/core/requests.php`**: Clase `Request`. Agrupa y simplifica los métodos globales como `$_GET`, `$_POST`, o lee datos directos en formato crudo `php://input` JSON.
+* **`/app/core/responses.php`**: Clase estática `Response`. Retorna formato estándar JSON, deteniendo la ejecución automáticamente en caso de errores para estructurar estandarizadamente toda comunicación visual de la App.
+* **`/app/core/tokenBlacklist.php`**: Clase defensiva encargada del registro persistente y atómico (protegido frente a Concurrencia/Race Conditions empleando flocks) de tokens que hayan sido deliberadamente desautorizados o invalidados (Logout manual). Cuenta con un sistema interno de automantenimiento para rotar y eliminar tokens antiguos transparentemente según un límite de buffer en `Configs.php`.
+* **`/app/core/userAuth.php`**: Engloba las lógicas de encripción `HS256` de firmas JWT y sus validaciones complejas, verificación en la memoria del cliente activo y control maestro de acceso.
 * **`/app/AuditLogger.php`**: Interfaz pasiva programada para recoger estelas de huellas de operadores cada que ocurre un CREATE, UPDATE o DELETE, y enrutarlas inmediatamente hacia el archivo bloqueado de auditoría del servidor central.
-* **`/app/controllers/BaseController.php`**: Esqueleto lógico implementado. Todo controlador funcional de endpoints hereda de esta capa para la asimilación global y DRY del `Request` y `$dbpush`.
+* **`/app/BaseController.php`**: Esqueleto lógico implementado. Todo controlador funcional de endpoints hereda de esta capa para la asimilación global y DRY del `Request` y `$dbpush`.
+* **`/app/Configs.php`**: Centraliza las configuraciones globales como credenciales de BD, rutas, y secret keys.
+* **`/app/Functions.php`**: Funciones helpers generales utilizadas a lo largo de toda la aplicación.
+* **`/app/RateLimiter.php`**: Firewall primitivo que usa un mapeador local en `.json` para contabilizar intentos repetidos desde una única IP e implementar bloqueos matemáticos disuasivos por tiempo.
 * **`/app/controllers/`**: Carpeta de controladores abstractos instanciados dinámicamente donde recae el *Single Responsibility Code* para despachar los datos, conectarse a BD y formar las respuestas lógicas a entregar.
 
 ## Arquitectura de Enrutamiento y Middlewares
