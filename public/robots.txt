@@ -1,0 +1,64 @@
+# robots.txt
+# Este archivo le dice a los robots de los motores de búsqueda
+# qué secciones del sitio pueden o no pueden indexar.
+
+# Permitimos que todos los robots accedan a todo el sitio
+User-agent: *
+Allow: /
+
+# Pero bloqueamos el acceso a la carpeta privada
+Disallow: /.git/HEAD
+Disallow: /wp-admin/*
+Disallow: /wordpress/*
+Disallow: /sitemap.xml
+Disallow: /security.txt
+Disallow: /.git/*
+Disallow: /ads.txt
+Disallow: /xmlrpc.php
+Disallow: /part
+Disallow: /wiki
+Disallow: /admin/*
+Disallow: /blog.env
+Disallow: /config.json
+Disallow: /.aws/*
+Disallow: /home/*
+Disallow: /react-app/*
+Disallow: /.envs/*
+Disallow: /config/*
+Disallow: /config.yaml
+Disallow: /config.yml
+Disallow: /config.py
+Disallow: /phpinfo
+Disallow: /_profiler/*
+Disallow: /phpinfo.php
+Disallow: /_all_dbs
+Disallow: /info.php
+Disallow: /.AWS_/*
+Disallow: /.circleci/*
+Disallow: /hc/*
+Disallow: /new/*
+Disallow: /lara/*
+Disallow: /api/*
+Disallow: chosen.php
+Disallow: mah.php
+Disallow: goods.php
+Disallow: /manager/*
+Disallow: /shell
+Disallow: /webshell
+Disallow: shell.php
+Disallow: webshell.php
+Disallow: /cron/*
+Disallow: tiny.php
+Disallow: .env
+Disallow: .git/*
+Disallow: /wp-content/
+Disallow: --.php
+Disallow: /%22/vendor/*
+Disallow: /vendor/*
+
+# Opcional: Indicamos la ubicación del archivo security.txt
+# Esto ayuda a investigadores de seguridad a contactarnos si encuentran vulnerabilidades
+# Security: https://www.ejemplo.com/.well-known/security.txt
+
+# Sitemap: Indica la ubicación del mapa del sitio para facilitar la indexación
+# Sitemap: https://www.ejemplo.com/sitemap.xml

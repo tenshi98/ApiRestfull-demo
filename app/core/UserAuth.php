@@ -278,6 +278,7 @@ class UserAuth {
      * @throws Ninguna excepción es lanzada explícitamente.
      */
     public static function login($username, $password) {
+
         // Validación básica de entrada: verifica que ambos parámetros estén presentes
         if (empty($username) || empty($password)) {
             return ['status' => 400, 'message' => 'Parámetros incompletos.'];

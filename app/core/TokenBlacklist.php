@@ -29,6 +29,7 @@ class TokenBlacklist {
      * @throws Ninguna excepción es lanzada explícitamente.
      */
     public static function readAll() {
+
         // Verificar si el archivo existe
         if (!file_exists(Configs::Software["blacklistTokensFile"])) {
             return [];

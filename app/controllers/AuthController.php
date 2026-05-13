@@ -21,7 +21,6 @@
 
 class AuthController extends BaseController {
 
-
     /**
      * Maneja el inicio de sesión de un usuario.
      *
@@ -108,6 +107,7 @@ class AuthController extends BaseController {
      * @return void
      */
     public function logout() {
+
         // Ejecutar lógica de cierre de sesión (invalidación de token)
         UserAuth::logout();
 

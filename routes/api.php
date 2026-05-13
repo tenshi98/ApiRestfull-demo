@@ -19,6 +19,8 @@ $routes = [
  * a un controlador y una acción específica.
  */
 function addRoute($method, $pattern, $controller, $action, $middlewares = []) {
+
+    // Variable Global
     global $routes;
 
     // Normaliza el método HTTP
@@ -87,6 +89,8 @@ addRoute('DELETE', '/api/items/{id}',   'ItemController', 'delete', ['auth']);
  * @throws RuntimeException Si el controlador o método no existe.
  */
 function dispatch(Request $request, $dbpush = null) {
+
+    // Variable Global
     global $routes;
 
     // Obtener datos de la request

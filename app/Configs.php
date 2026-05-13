@@ -43,9 +43,6 @@ class Configs {
         'rateLimiterMaxAttempts'   => 5,
         'rateLimiterWindowSeconds' => 60,
 
-
     ];
-
-
 
 }
